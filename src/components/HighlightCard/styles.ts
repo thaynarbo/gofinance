@@ -63,23 +63,15 @@ export const Amount = styled.Text<TypeProps>`
     font-family: ${({ theme }) => theme.font.medium};
     font-size: ${RFValue(32)}px;
 
-    color: ${({ theme }) => theme.colors.text_dark};
-    ${(props) =>
-        props.type === "total" &&
-        css`
-            color: ${({ theme }) => theme.colors.shape};
-        `}
+    color: ${({ theme, type }) =>
+        type === "total" ? theme.colors.shape : theme.colors.text_dark};
+
     margin-top: 38px;
 `;
 
 export const LastTransaction = styled.Text<TypeProps>`
     font-family: ${({ theme }) => theme.font.regular};
     font-size: ${RFValue(12)}px;
-
-    color: ${({ theme }) => theme.colors.text};
-    ${(props) =>
-        props.type === "total" &&
-        css`
-            color: ${({ theme }) => theme.colors.shape};
-        `}
+    color: ${({ type, theme }) =>
+        type === "total" ? theme.colors.shape : theme.colors.text};
 `;
