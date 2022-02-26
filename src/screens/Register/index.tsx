@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { Button } from "../../components/Form/Button";
 import { TransactionTypeButton } from "../../components/Form/TransactionTypeButton";
-import CategorySelectButton from "../../components/Form/CategorySelectButton/index";
+import { CategorySelectButton } from "../../components/Form/CategorySelectButton/index";
 import { CategorySelect } from "../CategorySelect";
 import { InputForm } from "../../components/Form/InputForm";
 import {
@@ -18,6 +18,7 @@ import {
     Fields,
     TransactionTypes,
 } from "./styles";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 interface FormData {
     name: string;
@@ -70,6 +71,7 @@ export function Register() {
             transactionType,
             category: category.key,
         };
+        console.log(data);
     }
 
     return (
@@ -118,6 +120,7 @@ export function Register() {
                             onPress={handleOpenSelectCategoryModal}
                         />
                     </Fields>
+
                     <Button
                         title="Enviar"
                         onPress={handleSubmit(handleRegister)}

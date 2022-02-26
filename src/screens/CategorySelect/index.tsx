@@ -13,6 +13,7 @@ import {
 
 import { Button } from "../../components/Form/Button";
 import { categories } from "../../utils/categories";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 interface Category {
     key: string;
