@@ -1,24 +1,29 @@
-import React, { useState } from "react";
-import { Keyboard, Modal, TouchableWithoutFeedback, Alert } from "react-native";
-
-import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+    NavigationProp,
+    ParamListBase,
+    useNavigation,
+} from "@react-navigation/native";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-
+import { Alert, Keyboard, Modal, TouchableWithoutFeedback } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import uuid from "react-native-uuid";
+import * as Yup from "yup";
 import { Button } from "../../components/Form/Button";
-import { TransactionTypeButton } from "../../components/Form/TransactionTypeButton";
 import { CategorySelectButton } from "../../components/Form/CategorySelectButton/index";
-import { CategorySelect } from "../CategorySelect";
 import { InputForm } from "../../components/Form/InputForm";
+import { TransactionTypeButton } from "../../components/Form/TransactionTypeButton";
+import { CategorySelect } from "../CategorySelect";
 import {
     Container,
+    Fields,
+    Form,
     Header,
     Title,
-    Form,
-    Fields,
     TransactionTypes,
 } from "./styles";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 interface FormData {
     name: string;
@@ -36,15 +41,21 @@ const schema = Yup.object().shape({
 export function Register() {
     const [transactionType, setTransactionType] = useState("credit");
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+
+    const dataKey = "@gofinance:transactions";
+
     const [category, setCategory] = useState({
         key: "category",
         name: "Categoria",
     });
 
+    const navigation: NavigationProp<ParamListBase> = useNavigation();
+
     const {
         control,
         handleSubmit,
         formState: { errors },
+        reset,
     } = useForm({
         resolver: yupResolver(schema),
     });
@@ -60,18 +71,40 @@ export function Register() {
         setCategoryModalOpen(true);
     }
 
-    function handleRegister(form: FormData) {
+    async function handleRegister(form: FormData) {
         if (!transactionType)
             return Alert.alert("Erro", "Selecione um tipo de transação");
         if (category.key === "category")
             return Alert.alert("Erro", "Selecione uma categoria");
-        const data = {
+        const newTransaction = {
+            id: String(uuid.v4()),
             name: form.name,
             amount: form.amount,
-            transactionType,
+            type: transactionType,
             category: category.key,
+            date: new Date(),
         };
-        console.log(data);
+
+        try {
+            const data = await AsyncStorage.getItem(dataKey);
+            const oldData = data ? JSON.parse(data) : [];
+
+            reset();
+            await AsyncStorage.setItem(
+                dataKey,
+                JSON.stringify([newTransaction, ...oldData])
+            );
+            setTransactionType("");
+            setCategory({
+                key: "category",
+                name: "Categoria",
+            });
+
+            navigation.navigate("Listagem");
+        } catch (error) {
+            console.log(error);
+            Alert.alert("Erro", "Não foi possivel salvar");
+        }
     }
 
     return (
@@ -102,17 +135,17 @@ export function Register() {
                                 title={"Income"}
                                 type={"up"}
                                 onPress={() =>
-                                    handleTransactionTypeSelect("up")
+                                    handleTransactionTypeSelect("positive")
                                 }
-                                isActive={transactionType === "up"}
+                                isActive={transactionType === "positive"}
                             />
                             <TransactionTypeButton
                                 title={"Outcome"}
                                 type={"down"}
                                 onPress={() =>
-                                    handleTransactionTypeSelect("down")
+                                    handleTransactionTypeSelect("negative")
                                 }
-                                isActive={transactionType === "down"}
+                                isActive={transactionType === "negative"}
                             />
                         </TransactionTypes>
                         <CategorySelectButton
@@ -120,11 +153,12 @@ export function Register() {
                             onPress={handleOpenSelectCategoryModal}
                         />
                     </Fields>
-
-                    <Button
-                        title="Enviar"
-                        onPress={handleSubmit(handleRegister)}
-                    />
+                    <GestureHandlerRootView>
+                        <Button
+                            title="Enviar"
+                            onPress={handleSubmit(handleRegister)}
+                        />
+                    </GestureHandlerRootView>
                 </Form>
                 <Modal visible={categoryModalOpen}>
                     <CategorySelect
