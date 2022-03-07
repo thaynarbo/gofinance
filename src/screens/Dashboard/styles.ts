@@ -102,3 +102,8 @@ export const TransactionList = styled(
 })``;
 
 export const LogoutButton = styled(BorderlessButton)``;
+
+export const LoadContainer = styled.View`
+    flex: 1;
+    justify-content: center;
+`;
